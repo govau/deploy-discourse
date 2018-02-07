@@ -1,0 +1,18 @@
+---
+applications:
+
+- name: discourse-sidekiq
+  path: .
+  buildpack: ruby_buildpack_no_assets_precompile
+  memory: 512M
+  instances: 1
+  command: ./cf_run_app_sidekiq.sh
+  no-route: true
+  health-check-type: process
+  timeout: 120
+  env: {}
+
+  services:
+   - discourse-postgres
+   - discourse-redis
+   - discourse-ups
