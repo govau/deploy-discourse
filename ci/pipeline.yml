@@ -1,14 +1,4 @@
 groups: []
-resource_types:
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: cfcommunity/slack-notification-resource
-- name: govau-cf
-  type: docker-image
-  source:
-    repository: govau/cf-resource
-    tag: venapp
 resources:
 - name: discourse.github-release
   type: github-release
@@ -29,11 +19,10 @@ resources:
   type: govau-cf
   source:
     api: https://api.system.d.cld.gov.au
-    username: ci-dta-discourse
-    password: ((d-password))
     organization: cloud
+    password: ((d-password))
     space: brendan
-
+    username: ci-dta-discourse
 resource_types:
 - name: slack-notification
   type: docker-image
@@ -51,9 +40,7 @@ jobs:
     - get: discourse.github-release
       params:
         include_source_tarball: true
-      # trigger: true
     - get: deploy-discourse.git
-      # trigger: true
   on_failure:
     put: slack
     params:
@@ -68,23 +55,26 @@ jobs:
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       text_file: discourse.github-release/tag
 - name: test-it
-  serial_groups: [d-cld]
+  serial_groups:
+  - d-cld
   plan:
   - do:
     - aggregate:
       - get: discourse.github-release
+        passed:
+        - fetch
         params:
           include_source_tarball: true
-        passed: [fetch]
       - get: deploy-discourse.git
-        passed: [fetch]
+        passed:
+        - fetch
     - task: extract-release-src
       file: deploy-discourse.git/ci/tasks/extract-release-src.yml
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
     - put: d-cf
       params:
+        current_app_name: discourse
         manifest: discourse.src-modified/manifest-discourse.yml
         path: discourse.src-modified
-        current_app_name: discourse
         show_app_log: true
