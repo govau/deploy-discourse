@@ -43,6 +43,11 @@ pushd ${OUTPUT_DIR}
   config.force_ssl = true
 ' config/environments/production.rb
 
+  # Make rails log everything to stdout
+  sed -i.bak '/config\.log_level = :info/a\
+  logger           = ActiveSupport::Logger.new(STDOUT)\n  logger.formatter = config.log_formatter\n  config.logger = ActiveSupport::TaggedLogging.new(logger)
+' config/environments/production.rb
+
   #Add a sidekiq configuration for production mode if necessary
   if ! grep -q "production:" config/sidekiq.yml; then
   cat <<EOF >> config/sidekiq.yml
