@@ -1,11 +1,10 @@
 groups: []
 resources:
-- name: discourse.github-release
-  type: github-release
+- name: discourse.git
+  type: git
   source:
-    access_token: ((github-read-public-repos-token))
-    owner: discourse
-    repository: discourse
+    tag_filter: v*
+    uri: https://github.com/discourse/discourse.git
 - name: deploy-discourse.git
   type: git
   source:
@@ -28,18 +27,16 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
-- name: bosh2-deployment
+- name: govau-cf
   type: docker-image
   source:
-    repository: cloudfoundry/bosh-deployment-resource
-    tag: v2.6.1
+    repository: govau/cf-resource
+    tag: venapp
 jobs:
 - name: fetch
   plan:
   - aggregate:
-    - get: discourse.github-release
-      params:
-        include_source_tarball: true
+    - get: discourse.git
     - get: deploy-discourse.git
   on_failure:
     put: slack
@@ -60,16 +57,12 @@ jobs:
   plan:
   - do:
     - aggregate:
-      - get: discourse.github-release
+      - get: discourse.git
         passed:
         - fetch
-        params:
-          include_source_tarball: true
       - get: deploy-discourse.git
         passed:
         - fetch
-    - task: extract-release-src
-      file: deploy-discourse.git/ci/tasks/extract-release-src.yml
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
     - put: d-cf

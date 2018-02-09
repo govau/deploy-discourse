@@ -19,7 +19,7 @@ fly validate-pipeline --config pipeline.yml
 
 fly --target ${TARGET} set-pipeline --config pipeline.yml --pipeline ${PIPELINE} -n -l $CREDENTIALS
 
-for resource in deploy-discourse.git discourse.github-release; do
+for resource in deploy-discourse.git discourse.git; do
   fly -t ${TARGET} check-resource --resource $PIPELINE/$resource
 done
 

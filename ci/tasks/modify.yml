@@ -4,12 +4,12 @@ image_resource:
   source: {repository: ubuntu}
 inputs:
 - name: deploy-discourse.git
-- name: discourse.src
+- name: discourse.git
 run:
   path: deploy-discourse.git/ci/scripts/modify.sh
   args: []
 outputs:
-- name: discourse.src-modified
+- name: discourse.git-modified
 params:
-  INPUT_DIR: discourse.src
-  OUTPUT_DIR: discourse.src-modified
+  INPUT_DIR: discourse.git
+  OUTPUT_DIR: discourse.git-modified
