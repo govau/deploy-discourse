@@ -35,11 +35,6 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
-# - name: govau-cf
-#   type: docker-image
-#   source:
-#     repository: govau/cf-resource
-#     tag: venapp
 jobs:
 - name: fetch
   plan:
@@ -82,13 +77,11 @@ jobs:
       params:
         current_app_name: discourse
         manifest: discourse.git-modified/manifest-discourse.yml
-        show_app_log: true
     - put: d-cld sidekiq
       resource: d-cf
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
-        show_app_log: true
 - name: ship-it-y
   serial_groups:
   - y-cld
@@ -103,15 +96,15 @@ jobs:
         - ship-it-d
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
+      params:
+        ROUTE: ((prod-route))
     - put: y-cld discourse
       resource: y-cf
       params:
         current_app_name: discourse
         manifest: discourse.git-modified/manifest-discourse.yml
-        show_app_log: true
     - put: y-cld sidekiq
       resource: y-cf
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
-        show_app_log: true

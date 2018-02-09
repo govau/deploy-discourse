@@ -9,6 +9,9 @@ set -o pipefail
 # echo out each line of the shell as it executes
 set -x
 
+: ${INPUT_DIR?"Need to set INPUT_DIR"}
+: ${OUTPUT_DIR?"Need to set OUTPUT_DIR"}
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cp -rf ${INPUT_DIR}/* ${OUTPUT_DIR}
@@ -20,7 +23,17 @@ cp ${SCRIPT_DIR}/../../cf_run_app_discourse.sh \
   ${OUTPUT_DIR}
 
 # Copy the manifests into the output dir.
-cp ${SCRIPT_DIR}/../../manifest-* ${OUTPUT_DIR}
+cp ${SCRIPT_DIR}/../../manifest-discourse.yml \
+  ${SCRIPT_DIR}/../../manifest-sidekiq.yml \
+  ${OUTPUT_DIR}
+
+# Add route to discourse manifest if needed
+if [[ "${ROUTE}" != "" ]]; then
+  cat <<EOF >> ${OUTPUT_DIR}/manifest-discourse.yml
+  routes:
+  - route: ${ROUTE}
+EOF
+fi
 
 # Modify discourse so it will run on cf
 pushd ${OUTPUT_DIR}

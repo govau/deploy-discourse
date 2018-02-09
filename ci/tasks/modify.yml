@@ -13,3 +13,4 @@ outputs:
 params:
   INPUT_DIR: discourse.git
   OUTPUT_DIR: discourse.git-modified
+  ROUTE:
