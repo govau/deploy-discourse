@@ -19,6 +19,9 @@ cp ${SCRIPT_DIR}/../../cf_run_app_discourse.sh \
   ${SCRIPT_DIR}/../../vcap_services_as_envs.py \
   ${OUTPUT_DIR}
 
+# Copy the manifests into the output dir.
+cp ${SCRIPT_DIR}/../../manifest-* ${OUTPUT_DIR}
+
 # Modify discourse so it will run on cf
 pushd ${OUTPUT_DIR}
   # Discourse requires the services to be available during assets precompilation,

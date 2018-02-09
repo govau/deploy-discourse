@@ -15,7 +15,8 @@ resources:
   source:
     url: ((concourse-slack-webhook-url))
 - name: d-cf
-  type: govau-cf
+  # type: govau-cf
+  type: cf
   source:
     api: https://api.system.d.cld.gov.au
     organization: cloud
@@ -27,17 +28,19 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
-- name: govau-cf
-  type: docker-image
-  source:
-    repository: govau/cf-resource
-    tag: venapp
+# - name: govau-cf
+#   type: docker-image
+#   source:
+#     repository: govau/cf-resource
+#     tag: venapp
 jobs:
 - name: fetch
   plan:
   - aggregate:
     - get: discourse.git
+      trigger: true
     - get: deploy-discourse.git
+      trigger: true
   on_failure:
     put: slack
     params:
@@ -48,9 +51,9 @@ jobs:
     put: slack
     params:
       text: |
-        :white_check_mark: $ATC_EXTERNAL_URL - Successfully fetched new discourse github release - $TEXT_FILE_CONTENT
+        :white_check_mark: $ATC_EXTERNAL_URL - Successfully fetched new discourse - $TEXT_FILE_CONTENT
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      text_file: discourse.github-release/tag
+      text_file: discourse.git/tag
 - name: test-it
   serial_groups:
   - d-cld
@@ -60,14 +63,15 @@ jobs:
       - get: discourse.git
         passed:
         - fetch
+        trigger: true
       - get: deploy-discourse.git
         passed:
         - fetch
+        trigger: true
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
     - put: d-cf
       params:
         current_app_name: discourse
-        manifest: discourse.src-modified/manifest-discourse.yml
-        path: discourse.src-modified
+        manifest: discourse.git-modified/manifest-discourse.yml
         show_app_log: true
