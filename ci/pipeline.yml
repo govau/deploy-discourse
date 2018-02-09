@@ -15,13 +15,20 @@ resources:
   source:
     url: ((concourse-slack-webhook-url))
 - name: d-cf
-  # type: govau-cf
   type: cf
   source:
     api: https://api.system.d.cld.gov.au
     organization: cloud
     password: ((d-password))
     space: brendan
+    username: ci-dta-discourse
+- name: y-cf
+  type: cf
+  source:
+    api: https://api.system.y.cld.gov.au
+    organization: dta
+    password: ((y-password))
+    space: discourse
     username: ci-dta-discourse
 resource_types:
 - name: slack-notification
@@ -54,7 +61,7 @@ jobs:
         :white_check_mark: $ATC_EXTERNAL_URL - Successfully fetched new discourse - $TEXT_FILE_CONTENT
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       text_file: discourse.git/tag
-- name: test-it
+- name: ship-it-d
   serial_groups:
   - d-cld
   plan:
@@ -70,8 +77,41 @@ jobs:
         trigger: true
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
-    - put: d-cf
+    - put: d-cld discourse
+      resource: d-cf
       params:
         current_app_name: discourse
         manifest: discourse.git-modified/manifest-discourse.yml
+        show_app_log: true
+    - put: d-cld sidekiq
+      resource: d-cf
+      params:
+        current_app_name: sidekiq
+        manifest: discourse.git-modified/manifest-sidekiq.yml
+        show_app_log: true
+- name: ship-it-y
+  serial_groups:
+  - y-cld
+  plan:
+  - do:
+    - aggregate:
+      - get: discourse.git
+        passed:
+        - ship-it-d
+      - get: deploy-discourse.git
+        passed:
+        - ship-it-d
+    - task: modify
+      file: deploy-discourse.git/ci/tasks/modify.yml
+    - put: y-cld discourse
+      resource: y-cf
+      params:
+        current_app_name: discourse
+        manifest: discourse.git-modified/manifest-discourse.yml
+        show_app_log: true
+    - put: y-cld sidekiq
+      resource: y-cf
+      params:
+        current_app_name: sidekiq
+        manifest: discourse.git-modified/manifest-sidekiq.yml
         show_app_log: true
