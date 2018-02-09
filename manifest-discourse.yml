@@ -4,7 +4,7 @@ applications:
   path: .
   buildpack: ruby_buildpack_no_assets_precompile
   memory: 1500MB
-  instances: 1
+  instances: 2
   command: ./cf_run_app_discourse.sh
   timeout: 120
   env:
