@@ -56,7 +56,7 @@ jobs:
         :white_check_mark: $ATC_EXTERNAL_URL - Successfully fetched new discourse - $TEXT_FILE_CONTENT
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       text_file: discourse.git/tag
-- name: ship-it-y-staging
+- name: deploy-it-y-staging
   serial_groups:
   - y-cld-staging
   plan:
@@ -84,18 +84,18 @@ jobs:
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
-- name: ship-it-y
+- name: deploy-it-y
   serial_groups:
-  - y-cld
+  - y-cld-prod
   plan:
   - do:
     - aggregate:
       - get: discourse.git
         passed:
-        - ship-it-y-staging
+        - deploy-it-y-staging
       - get: deploy-discourse.git
         passed:
-        - ship-it-y-staging
+        - deploy-it-y-staging
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
       params:
