@@ -14,13 +14,13 @@ resources:
   type: slack-notification
   source:
     url: ((concourse-slack-webhook-url))
-- name: d-cf
+- name: y-cf-staging
   type: cf
   source:
-    api: https://api.system.d.cld.gov.au
-    organization: cloud
-    password: ((d-password))
-    space: brendan
+    api: https://api.system.y.cld.gov.au
+    organization: dta
+    password: ((y-password))
+    space: discourse-staging
     username: ci-dta-discourse
 - name: y-cf
   type: cf
@@ -56,9 +56,9 @@ jobs:
         :white_check_mark: $ATC_EXTERNAL_URL - Successfully fetched new discourse - $TEXT_FILE_CONTENT
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       text_file: discourse.git/tag
-- name: ship-it-d
+- name: ship-it-y-staging
   serial_groups:
-  - d-cld
+  - y-cld-staging
   plan:
   - do:
     - aggregate:
@@ -72,13 +72,15 @@ jobs:
         trigger: true
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
-    - put: d-cld discourse
-      resource: d-cf
+      params:
+        ROUTE: ((staging-route))
+    - put: y-cld staging discourse
+      resource: y-cf-staging
       params:
         current_app_name: discourse
         manifest: discourse.git-modified/manifest-discourse.yml
-    - put: d-cld sidekiq
-      resource: d-cf
+    - put: y-cld staging sidekiq
+      resource: y-cf-staging
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
@@ -90,20 +92,20 @@ jobs:
     - aggregate:
       - get: discourse.git
         passed:
-        - ship-it-d
+        - ship-it-y-staging
       - get: deploy-discourse.git
         passed:
-        - ship-it-d
+        - ship-it-y-staging
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
       params:
         ROUTE: ((prod-route))
-    - put: y-cld discourse
+    - put: y-cld prod discourse
       resource: y-cf
       params:
         current_app_name: discourse
         manifest: discourse.git-modified/manifest-discourse.yml
-    - put: y-cld sidekiq
+    - put: y-cld prod sidekiq
       resource: y-cf
       params:
         current_app_name: sidekiq
