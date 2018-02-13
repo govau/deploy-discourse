@@ -84,6 +84,19 @@ jobs:
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: $BUILD_JOB_NAME FAILED
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: $BUILD_JOB_NAME SUCCESS
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      text_file: discourse.git/tag
 - name: deploy-it-y
   serial_groups:
   - y-cld-prod
@@ -110,3 +123,16 @@ jobs:
       params:
         current_app_name: sidekiq
         manifest: discourse.git-modified/manifest-sidekiq.yml
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: $BUILD_JOB_NAME FAILED
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: $BUILD_JOB_NAME SUCCESS
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      text_file: discourse.git/tag
