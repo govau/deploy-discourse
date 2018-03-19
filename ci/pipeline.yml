@@ -111,8 +111,6 @@ jobs:
         - deploy-it-y-staging
     - task: modify
       file: deploy-discourse.git/ci/tasks/modify.yml
-      params:
-        ROUTE: ((prod-route))
     - put: y-cld prod discourse
       resource: y-cf
       params:
